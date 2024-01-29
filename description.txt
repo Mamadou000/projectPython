@@ -1,0 +1,165 @@
+=== main.py ===
+Not many changes other than loading the config.
+Most things get the config,
+and as the config is a dictionary it is passed around as a pointer,
+which means when one part of the code changes it,
+it will change for all parts.
+
+=== Camera.py ===
+Only change I was made was that to move the camera you have to be closer to the edges
+
+=== colors.py ===
+Bunch of useful colors that are used around the program
+
+=== Control.py ===
+Hold a few classes that simulate the menu (the buttons)
+First is the Toggle classe,
+which is an on-off switch.
+The toggle switces color depending on whether it is on or Not.
+It also has self.config_key, which is the value in the config it changes.
+
+Next is NumericControl.
+NumericControl has to keep track of whether its value should be an integer or not.
+If it should be, it always rounds its value to an int.
+It also has self.buffer_value, which is the value the user is currently typing before it gets approved.
+
+Last is the Button.
+Buttons are used for quit and restart.
+They take a function as one of its properties, and when it is clicked it runs it.
+
+=== Environment.py ===
+To create the environment we need to make an image for every tile.
+In img_environment we choose a random image for every tile.
+We do this by using choose_tile_img, which uses probability to decide which img to choose.
+The chances [0.2, 0.8, 1] mean that the first image haas chance 20%
+If the first image isn't chosen then the second image has change 80%
+And everything else has third image.
+
+We also place_trees at a chance of 1% per tile.
+
+In draw_land we have 4 if statements that we use for performance.
+These if statements check whether the tils is visible on screen,
+and doesn't bother to draw them if they aren't within the screen.
+We also draw all the trees.
+
+In draw_bob we have a value called ratio.
+We use ratio to show how much through the animation we are.
+We get the current position of the bob,
+and the position it is going to end up,
+and we get draw the bob at a position inbetween based on the animation frame.\
+
+We don't draw the bob if it is off of the screen.
+We also make the bob more transparent according to its velocity.
+
+save and load simply get data from files using pickle.
+
+We use kull_bobs to get rid of any bobs that are off of the map.
+This is used when we make the map size smaller.
+
+Every frame we have to create a new quadtree,
+and we first do this by getting rid of dead bobs.
+Once we've done this we create a new quadtree and put every bob into it.
+
+=== food.py ===
+Food is kept in a dictionary, with each key being a coordinate.
+This file isn't changed much.
+
+=== Game.py ===
+The Game class has self.frame_per_tick,
+which is how many frames it takes for a bob to move one tile.
+There is also self.frames_left,
+which is a counter relative to self.frame_per_tick.
+
+self.fonts is used here to hold all of the fonts used.
+The reason we do this here and not in the function that draws text
+is that it's a very expensive operation to load a font,
+causing extreme lag.
+
+The control_window (or menu) is center screen,
+and is slightly see through.
+
+We have self.is_clicking and self.pressed_keys,
+we use these so that we only type one character per key press,
+instead of one character per frame.
+
+When we click on a menu button,
+we change the related value to the Control.
+If the map width or height is changed,
+then we recreate the entire environment.
+
+=== movement.py ===
+Holds the enum for movement values, to differentiate directions.
+
+=== Population.py ===
+For properties such as self.velocity,
+we use an if statement to decide whether the value is default.
+
+Each bob has a certain number of friendship points used to make friends.
+
+Every update,
+the bob uses the quadtree to find all bobs within viewing distance of it.
+It also keeps note of which ones can eat it,
+and which ones it can eat.
+
+If a bob has enough friendship to do so,
+it will attempt to become friends with another bob.
+The bob has to be neither prey or predator.
+
+The bob then decides which visible prey is best to eat,
+and which predator is closest.
+It also looks for the biggest food source.
+
+Before finally moving,
+if this bob has any friends,
+it can use the information that the friend knows to find better food sources,
+such as more food.
+
+Priority is to move away from predators.
+Then the bob looks for stationary food.
+Then it looks for other bobs to eat (in which case this bob is a predator).
+If it can't see any of this,
+then it tries to remember some food it found before.
+If no case is met then the bob moves randomly (or stays still).
+
+The bob then remembers this position.
+
+Now the bob needs to eat the food it is on.
+It finds out how much food it can eat this frame.
+It eats as much stationary food as it can.
+If the bob isn't full, it tries to eat any prey that it is on.
+
+If the bob has enough energy,
+it will attempt to mate with any bob on the same tile.
+If it has full energy,
+it will produce a child without a partner.
+
+The bob then loses any memories it can just look at.
+And it loses any friends that are too close.
+
+=== quadtree.py ===
+The Point class is meant to be a simpler version of a bob.
+It contains an x and y, which is the bobs position.
+It also contains a reference to the bob.
+
+The Quadtree class represents a node of a quadtree.
+A quadtree is a tree where each node can have either 4 or 0 branches.
+Quadtrees have x1, x2, y1, y2 to show what area it covers.
+Each quadtree covers area, with its branches covering less and less area.
+When trying to insert a point into the quadtree,
+it must first check whether the point is within bounds.
+It can then try to append the point to its own points.
+If it gets full, it needs to make branches.
+
+It makes 4 branches, each representing a corner of the parent qtree.
+It then inserts the point in one of those branches.
+
+We also need to be able to query the quadtree.
+First, we check whether we are checking an area that intersect with this qtree.
+
+Then we get all points in that area from this qtree.
+If this qtree has chilren,
+then we also return the points in their bounds.
+
+We use a quadtree because it makes queries a lot faster.
+Without a qtree, querying every other bob is an n^2 algorithm.
+With the qtree it is nlog(n), scaling much better.

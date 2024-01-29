@@ -18,7 +18,7 @@ class Camera:
         #occupons nous du deplacement horizontal
         if position_souris[0] > self.largeur * 0.97: #extremité droit
             self.dx = -self.vitesse  #deplacer vers la gauche
-        elif position_souris[0] < self.largeur * 0.3: #extremité gauche
+        elif position_souris[0] < self.largeur * 0.03: #extremité gauche
             self.dx = self.vitesse #deplacer vers la droite
         else:
             self.dx = 0 #on ne change rien
@@ -26,7 +26,7 @@ class Camera:
         #maitenant le deplacement vertical
         if position_souris[1] > self.hauteur * 0.97: #extremité haut
             self.dy = -self.vitesse  #deplacer vers le bas
-        elif position_souris[1] < self.hauteur * 0.3: #extremité bas
+        elif position_souris[1] < self.hauteur * 0.03: #extremité bas
             self.dy = self.vitesse #deplacer vers le haut
         else:
             self.dy = 0 #on ne change rien
